@@ -3,7 +3,6 @@ import numpy as np
 from keras.models import Sequential, Model # basic class for specifying and training a neural network
 from keras.layers import Input, Convolution2D as Conv2D, MaxPooling2D, Dense, Dropout, Activation, Flatten
 from keras.utils import np_utils # utilities for one-hot encoding of ground truth values
-from keras.optimizers import SGD
 from keras.optimizers import Adam
 from matplotlib import pyplot as plt
 from sklearn.model_selection import train_test_split
@@ -17,7 +16,7 @@ def read_train_data():
     with (open('train-x.txt','r')) as master_data:
         for line in master_data:
             img = Image.open("train/"+line.strip())
-            image_arr.append(np.array(img.resize((100, 100), PIL.Image.ADAPTIVE)))
+            image_arr.append(np.array(img.resize((28, 28), PIL.Image.ADAPTIVE)))
     return np.array(image_arr)
 
 
@@ -34,7 +33,7 @@ def read_test_data():
     with (open('test-x.txt','r')) as master_data:
         for line in master_data:
             img = Image.open("test/"+line.strip())
-            image_arr.append(np.array(img.resize((100, 100), PIL.Image.ADAPTIVE)))
+            image_arr.append(np.array(img.resize((28, 28), PIL.Image.ADAPTIVE)))
     return np.array(image_arr)
 
 
@@ -50,7 +49,7 @@ def encode_label_values(labels_data, num_classes):
 def build_keras_model(learning_rate, epoch):
     # print(learning_rate)
     model = Sequential()
-    model.add(Conv2D(32, (3, 3), input_shape=(100, 100, 3), activation='relu'))
+    model.add(Conv2D(32, (3, 3), input_shape=(28, 28, 3), activation='relu'))
     model.add(Dropout(0.2))
     model.add(MaxPooling2D(pool_size=(2, 2)))
     model.add(Conv2D(32, (3, 3), activation='relu'))
@@ -66,6 +65,7 @@ def build_keras_model(learning_rate, epoch):
     model.add(Dense(256, activation='relu'))
     model.add(Dropout(0.2))
     model.add(Dense(2, activation='softmax'))
+    decay = learning_rate/epoch
     adam = Adam(lr=learning_rate)
     model.compile(loss='categorical_crossentropy', optimizer=adam, metrics=['accuracy'])
     return model
@@ -114,7 +114,7 @@ def main():
     labels_data = read_train_labels()
     image_data_test = read_test_data()
     train_data, dev_data, train_label_values, dev_label_values = shuffle_data(image_data, labels_data)
-    tune_hyper_parameters(train_data, dev_data, train_label_values, dev_label_values, 500, 0.0001, 50)
+    tune_hyper_parameters(train_data, dev_data, train_label_values, dev_label_values, 1000, 0.0001, 50)
 
     
 if __name__ == '__main__':
